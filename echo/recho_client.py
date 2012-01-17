@@ -21,12 +21,17 @@ if nargs > 1:
 if nargs > 2:
     port = int(sys.argv[2])
 
-s = socket.socket(socket.AF_INET, 
-                  socket.SOCK_STREAM) 
-s.connect((host,port))
-i = input("please type something")
-s.send(i) 
-data = s.recv(size) 
-s.close() 
-print 'from (%s,%s) %s' % (host, port, data)
 
+i = "hold" 
+while not len(i) == 0:
+    s = socket.socket(socket.AF_INET, 
+                  socket.SOCK_STREAM) 
+    s.connect((host,port))
+
+    i = input("please type something")
+    s.send(i) 
+    data = s.recv(size) 
+ 
+    print 'from (%s,%s) %s' % (host, port, data)
+
+    s.close()
