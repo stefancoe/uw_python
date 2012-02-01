@@ -36,7 +36,7 @@ print 'echo_server listening on port %s, to exit type return ' % port
 server.listen(backlog)
 
 timeout = 10 # seconds
-input = [server]
+input = [server,sys.stdin]
 running = True
 while running:
     inputready,outputready,exceptready = select.select(input,[],[],timeout)
@@ -70,4 +70,5 @@ while running:
                 input.remove(s)
 
 s.close()
+
 
