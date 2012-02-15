@@ -1,0 +1,100 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=7,IE=9" />
+    <!--The viewport meta tag is used to improve the presentation and behavior of the samples
+      on iOS devices-->
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
+    <title>ArcGIS Geoprocessing and ArcGIS Server JavaScript API</title>
+    <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/2.7/js/dojo/dijit/themes/claro/claro.css">
+    <script type="text/javascript">
+      djConfig = {
+        parseOnLoad:true
+      }
+    </script>
+    <style>
+      html, body { height: 100%; width: 100%; margin: 0; padding: 0; }
+    </style>  
+    <script type="text/javascript" src="http://serverapi.arcgisonline.com/jsapi/arcgis/?v=2.7"></script>
+    <script type="text/javascript">
+      dojo.require("esri.map");
+      dojo.require("esri.tasks.gp");
+      dojo.require("esri.toolbars.draw");
+      dojo.require("dijit.layout.BorderContainer");
+      dojo.require("dijit.layout.ContentPane");
+     
+      var map, gp, toolbar;
+
+      function init() {
+        var initExtent = new esri.geometry.Extent({"xmin":-12689769,"ymin":-1937220,"xmax":2964533,"ymax":9725235,"spatialReference":{"wkid":102100}});
+        map = new esri.Map("map",{extent:initExtent});
+       
+        var streetMap = new esri.layers.ArcGISTiledMapServiceLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer");
+       
+        map.addLayer(streetMap);
+       
+        //setup the geoprocessor teask
+        gp = new esri.tasks.Geoprocessor("http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Specialty/ESRI_Currents_World/GPServer/MessageInABottle");
+        gp.setOutSpatialReference({wkid:102100});
+       
+        toolbar = new esri.toolbars.Draw(map);
+        dojo.connect(toolbar, "onDrawEnd", executeParticleTrack);
+       
+       
+        //resize the map when the browser resizes - view the 'Resizing and repositioning the map' section in
+        //the following help topic for more details http://help.esri.com/EN/webapi/javascript/arcgis/help/jshelp_start.htm#jshelp/inside_guidelines.htm
+        var resizeTimer;
+        dojo.connect(map, 'onLoad', function(theMap) {
+          //resize the map when the browser resizes
+          dojo.connect(dijit.byId('map'), 'resize', map,map.resize);
+        });
+      }
+
+      function executeParticleTrack(geometry) {
+     
+        map.graphics.clear();
+     
+        var simplePictureMarkerSymbol = new esri.symbol.PictureMarkerSymbol('../images/sailboat.png', 26, 26);
+        var graphic = new esri.Graphic(geometry,simplePictureMarkerSymbol);
+        map.graphics.add(graphic);
+       
+        toolbar.deactivate();
+
+        var features= [];
+        features.push(graphic);
+        var featureSet = new esri.tasks.FeatureSet();
+        featureSet.features = features;
+
+        //set the input parameters.  View the task in the services explorer to see the input variables required to run the model.
+        //see http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Specialty/ESRI_Currents_World/GPServer/MessageInABottle
+        var params = { "Input_Point":featureSet, "Days": dojo.byId("days").value };
+        gp.execute(params, displayTrack);
+      }
+
+      function displayTrack(results, messages) {
+        var simpleLineSymbol = new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new dojo.Color([255,255,0]), 3);
+        var features = results[0].value.features;
+       
+        dojo.forEach(features,function(feature){
+          feature.setSymbol(simpleLineSymbol);
+          map.graphics.add(feature);
+        });
+      }
+      dojo.addOnLoad(init);
+    </script>
+  </head>
+  <body class="claro">
+  <div dojotype="dijit.layout.BorderContainer" design="sidebar" style="width:100%;height:100%;margin:0px;" gutters="true">
+    <div dojotype="dijit.layout.ContentPane" region="left" style="width:300px;">
+      <ol>
+        <li>Enter the number of days to track:<input type="text" id="days" value="180" size="3"/></li>
+        <li>Click the  <button onclick="toolbar.activate(esri.toolbars.Draw.POINT);"> Execute</button> button. </li>
+        <li>Click the map to specify the start point.</li>
+      </ol>
+      * Note that the start season is spring.
+    </div>
+    <div dojotype="dijit.layout.ContentPane" id="map" region="center"></div>
+  </div>
+  </body>
+</html> 
