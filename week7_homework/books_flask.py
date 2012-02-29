@@ -65,8 +65,12 @@ def message_page():
 @app.route('/<bookID>')
 def book_info(bookID):
     books = bookdb.BookDB()
+    
     details = books.title_info(bookID)
-    page = message_template2 % details
+    hold = []
+    for key, value in details.items():
+        hold.append(key + ": " + value)
+    page = message_template2 % '<br>'.join(hold)
     return page 
      
 
