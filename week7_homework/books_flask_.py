@@ -74,7 +74,7 @@ def book_info(bookTitle):
             messages = books.title_info(y)
             page = message_template2 % messages
         else:
-            message = "not found"
+            messages = "not found"
             page = message_template2 % messages
     return page 
      
