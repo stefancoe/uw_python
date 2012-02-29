@@ -41,7 +41,7 @@ app.debug = True # development only - remove on production machines
 # View functions generate HTTP responses including HTML pages and headers
 
 @app.route('/books_flask.html')
-def form():
+def book_titles():
     books = bookdb.BookDB()
     titles = books.titles()
         #assert len(titles) > 1
@@ -63,7 +63,7 @@ def message_page():
     return 'Message: %s' % request.args['message']
 
 @app.route('/<bookID>')
-def book_info(bookID):
+def book_details(bookID):
     books = bookdb.BookDB()
     
     details = books.title_info(bookID)
