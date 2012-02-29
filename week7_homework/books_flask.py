@@ -40,7 +40,7 @@ app.debug = True # development only - remove on production machines
 
 # View functions generate HTTP responses including HTML pages and headers
 
-@app.route('/echo_flask.html')
+@app.route('/books_flask.html')
 def form():
     books = bookdb.BookDB()
     titles = books.titles()
@@ -49,7 +49,8 @@ def form():
     messages = ""
     for title in titles:
         x = title["title"]
-        link = '<a href= ' + '"/' + x + '"' + '>%s</a><br>'
+        y = title["id"]
+        link = '<a href= ' + '"/' + y + '"' + '>%s</a><br>'
         messages = (link %x) + messages
         #messages = ('<a href=%s>%s</a><br>' %x) + messages # insert at head
         
@@ -61,21 +62,11 @@ def message_page():
     # Flask converts return string to HTML page
     return 'Message: %s' % request.args['message']
 
-@app.route('/<bookTitle>')
-def book_info(bookTitle):
+@app.route('/<bookID>')
+def book_info(bookID):
     books = bookdb.BookDB()
-    titles = books.titles()
-    messages = ""
-    for title in titles:
-        x = title["title"]
-        if x == bookTitle:
-            y = title["id"]
-            
-            messages = books.title_info(y)
-            page = message_template2 % messages
-        else:
-            messages = "not found"
-            page = message_template2 % messages
+    details = books.title_info(bookID)
+    page = message_template2 % details
     return page 
      
 
